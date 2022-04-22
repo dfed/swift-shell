@@ -123,9 +123,16 @@ extension Process {
 
 extension Pipe {
     fileprivate func readOutput() throws -> String {
+        defer {
+          // We shouldn't need to do this per the docs, but
+          // we've seen that not doing this can lead to an error:
+          // Error: Error Domain=NSPOSIXErrorDomain Code=9 "Bad file descriptor"
+          try? fileHandleForReading.close()
+        }
         guard let readData = try fileHandleForReading.readToEnd() else {
             return ""
         }
+
         return String(
             decoding: readData,
             as: UTF8.self)
