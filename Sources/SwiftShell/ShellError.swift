@@ -15,6 +15,15 @@
 //  limitations under the License.
 //
 
-import Foundation
+/// An error thrown after shell execution when the status code is non-zero.
+public struct ShellError: Error {
+    /// The status code of the command.
+    public let code: Int32
+    /// Text written to standard out during execution of the command.
+    public let stdout: String
+    /// Text written to standard error during execution of the command.
+    public let stderr: String
+    /// The command that was being executed.
+    public let command: String
+}
 
-// TODO: Do stuff here.
