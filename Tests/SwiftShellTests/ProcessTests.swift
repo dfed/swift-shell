@@ -25,7 +25,7 @@ class ProcessTests: XCTestCase {
     }
 
     func test_execute_propagatesErrorCode() throws {
-        XCTAssertThrowsError(try Process.execute(#"cat -f"#)) {
+        XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
             XCTAssertEqual(
                 ($0 as? ShellError)?.code,
             1)
@@ -33,18 +33,15 @@ class ProcessTests: XCTestCase {
     }
 
     func test_execute_propagatesStandardError() throws {
-        XCTAssertThrowsError(try Process.execute(#"cat -f"#)) {
+        XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
             XCTAssertEqual(
                 ($0 as? ShellError)?.stderr,
-            """
-            cat: illegal option -- f
-            usage: cat [-belnstuv] [file ...]\n
-            """)
+            "cat: non-existent-file: No such file or directory\n")
         }
     }
 
     func test_execute_propagatesStandardOutput() throws {
-        XCTAssertThrowsError(try Process.execute(#"echo 'hi'; cat -f"#)) {
+        XCTAssertThrowsError(try Process.execute(#"echo 'hi'; cat non-existent-file"#)) {
             XCTAssertEqual(
                 ($0 as? ShellError)?.stdout,
             "hi\n")
@@ -52,10 +49,10 @@ class ProcessTests: XCTestCase {
     }
 
     func test_execute_propagatesCommandInError() throws {
-        XCTAssertThrowsError(try Process.execute(#"cat -f"#)) {
+        XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
             XCTAssertEqual(
                 ($0 as? ShellError)?.command,
-            #"cat -f"#)
+            #"cat non-existent-file"#)
         }
     }
 
