@@ -48,11 +48,10 @@ extension Process {
 
         let stdout = Pipe()
         task.standardOutput = stdout
-
         let stderr = Pipe()
         task.standardError = stderr
 
-        task.launch()
+        try task.run()
         task.waitUntilExit()
         guard task.terminationStatus == 0 else {
             throw ShellError(
@@ -110,7 +109,7 @@ extension Process {
         let stderr = Pipe()
         task.standardError = stderr
 
-        task.launch()
+        try task.run()
         task.waitUntilExit()
         guard task.terminationStatus == 0 else {
             throw ShellError(
