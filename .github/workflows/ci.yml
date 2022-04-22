@@ -9,7 +9,7 @@ on:
 jobs:
   spm-12:
     name: SPM Build Xcode 13
-    runs-on: macosx11.3
+    runs-on: macos-11
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
