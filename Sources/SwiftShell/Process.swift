@@ -29,22 +29,15 @@ extension Process {
     ///   - directory: The directory within which the command will execute.
     public static func execute(
         _ command: String,
-        fromShell shell: String = "/bin/zsh",
+        from shell: Shell = .zsh,
         within directory: Directory = .pwd)
     throws
     -> String
     {
-        let script = makeScript(command: command, shell: shell, from: directory)
-        let scriptLocation = FileManager
-            .default
-            .temporaryDirectory
-            .appendingPathComponent(ProcessInfo().globallyUniqueString)
-            .appendingPathExtension("sh")
-        try script.write(to: scriptLocation, atomically: true, encoding: .utf8)
-        try makeFileURLExecutable(scriptLocation)
-
+        let script = makeCommand(command, executeWithin: directory)
         let task = Process()
-        task.launchPath = scriptLocation.relativePath
+        task.launchPath = shell.rawValue
+        task.arguments = ["-c", script]
 
         let stdout = Pipe()
         task.standardOutput = stdout
@@ -66,18 +59,6 @@ extension Process {
 
     // MARK: Private
 
-    private static func makeScript(
-        command: String,
-        shell: String = "/bin/zsh",
-        from directory: Directory = .pwd)
-    -> String
-    {
-        """
-        #!\(shell)
-        \(makeCommand(command, executeWithin: directory))
-        """
-    }
-
     private static func makeCommand(
         _ command: String,
         executeWithin directory: Directory)
@@ -93,30 +74,6 @@ extension Process {
             \(command)
             popd
             """
-        }
-    }
-
-    private static func makeFileURLExecutable(_ url: URL) throws {
-        let task = Process()
-        let path = "/bin/chmod"
-        let arguments = ["+x", "\(url.relativePath)"]
-        task.launchPath = path
-        task.arguments = arguments
-
-        let stdout = Pipe()
-        task.standardOutput = stdout
-
-        let stderr = Pipe()
-        task.standardError = stderr
-
-        try task.run()
-        task.waitUntilExit()
-        guard task.terminationStatus == 0 else {
-            throw ShellError(
-                code: task.terminationStatus,
-                stdout: try stdout.readOutput(),
-                stderr: try stderr.readOutput(),
-                command: "\(path) \(arguments.joined(separator: " "))")
         }
     }
 }
