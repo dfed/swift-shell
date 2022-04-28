@@ -29,15 +29,15 @@ extension Process {
     ///   - directory: The directory within which the command will execute.
     public static func execute(
         _ command: String,
-        from shell: Shell = .zsh,
+        from shell: Shell.Type = ZshShell.self,
         within directory: Directory = .pwd)
     throws
     -> String
     {
         let script = makeCommand(command, executeWithin: directory)
         let task = Process()
-        task.launchPath = shell.rawValue
-        task.arguments = ["-c", script]
+        task.launchPath = shell.path
+        task.arguments = shell.arguments + [script]
 
         let stdout = Pipe()
         task.standardOutput = stdout

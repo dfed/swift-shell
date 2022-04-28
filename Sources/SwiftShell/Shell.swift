@@ -15,7 +15,20 @@
 //  limitations under the License.
 //
 
-public enum Shell: String {
-  case zsh = "/bin/zsh"
-  case bash = "/bin/bash"
+public protocol Shell {
+    /// The path to the shell command.
+    static var path: String { get }
+
+    /// The arguments to the shell command that enable executing an arbitrary command.
+    static var arguments: [String] { get }
+}
+
+public struct ZshShell: Shell {
+    public static let path = "/bin/zsh"
+    public static let arguments = ["-c"]
+}
+
+public struct BashShell: Shell {
+    public static let path = "/bin/bash"
+    public static let arguments = ["-c"]
 }
