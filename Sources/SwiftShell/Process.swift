@@ -48,7 +48,7 @@ extension Process {
         task.waitUntilExit()
         guard task.terminationStatus == 0 else {
             throw ShellError(
-                code: task.terminationStatus,
+                terminationStatus: task.terminationStatus,
                 stdout: try stdout.readOutput(),
                 stderr: try stderr.readOutput(),
                 command: command)

@@ -27,7 +27,7 @@ class ProcessTests: XCTestCase {
     func test_execute_propagatesErrorCode() throws {
         XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
             XCTAssertEqual(
-                ($0 as? ShellError)?.code,
+                ($0 as? ShellError)?.terminationStatus,
             1)
         }
     }
