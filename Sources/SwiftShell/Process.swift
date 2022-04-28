@@ -27,10 +27,12 @@ extension Process {
     ///   - command: The shell command to execute.
     ///   - shell: The path to the shell from which to execute. Defaults to zsh.
     ///   - directory: The directory within which the command will execute.
+    ///   - successCodes: The exit codes that represent success of this operation.
     public static func execute(
         _ command: String,
         from shell: Shell.Type = ZshShell.self,
-        within directory: Directory = .pwd)
+        within directory: Directory = .pwd,
+        successCodes: Set<Int32> = [0])
     throws
     -> String
     {
@@ -46,7 +48,7 @@ extension Process {
 
         try task.run()
         task.waitUntilExit()
-        guard task.terminationStatus == 0 else {
+        guard successCodes.contains(task.terminationStatus) else {
             throw ShellError(
                 terminationStatus: task.terminationStatus,
                 stdout: try stdout.readOutput(),
