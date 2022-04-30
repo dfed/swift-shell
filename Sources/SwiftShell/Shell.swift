@@ -15,20 +15,22 @@
 //  limitations under the License.
 //
 
-public protocol Shell {
+public struct Shell {
+
+    public init(path: String, arguments: [String]) {
+        self.path = path
+        self.arguments = arguments
+    }
+
     /// The path to the shell command.
-    static var path: String { get }
+    public let path: String
 
     /// The arguments to the shell command that enable executing an arbitrary command.
-    static var arguments: [String] { get }
-}
+    public let arguments: [String]
 
-public struct ZshShell: Shell {
-    public static let path = "/bin/zsh"
-    public static let arguments = ["-c"]
-}
+    /// A convenience accessor for zsh shell struct.
+    public static let zsh = Shell(path: "/bin/zsh", arguments: ["-c"])
 
-public struct BashShell: Shell {
-    public static let path = "/bin/bash"
-    public static let arguments = ["-c"]
+    /// A convenience accessor for a bash shell struct.
+    public static let bash = Shell(path: "/bin/bash", arguments: ["-c"])
 }

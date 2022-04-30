@@ -30,7 +30,7 @@ extension Process {
     ///   - successCodes: The exit codes that represent success of this operation.
     public static func execute(
         _ command: String,
-        from shell: Shell.Type = ZshShell.self,
+        from shell: Shell = .zsh,
         within directory: Directory = .pwd,
         successCodes: Set<Int32> = [0])
     throws
