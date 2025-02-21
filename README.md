@@ -3,8 +3,8 @@ A simple wrapper for executing shell commands from Swift
 
 ## Requirements
 
-- Swift 5.6
-- Xcode 13.3+
+- Swift 6
+- Xcode 16.0
 
 # Usage
 

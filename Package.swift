@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -11,16 +11,24 @@ let package = Package(
     products: [
         .library(
             name: "SwiftShell",
-            targets: ["SwiftShell"]),
+            targets: ["SwiftShell"]
+        ),
     ],
     dependencies: [],
     targets: [
         .target(
             name: "SwiftShell",
-            dependencies: []),
+            dependencies: [],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+            ]
+        ),
         .testTarget(
             name: "SwiftShellTests",
-            dependencies: ["SwiftShell"]),
-    ],
-    swiftLanguageVersions: [.v5]
+            dependencies: ["SwiftShell"],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+            ]
+        ),
+    ]
 )

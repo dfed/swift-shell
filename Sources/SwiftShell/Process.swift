@@ -32,9 +32,8 @@ extension Process {
         _ command: String,
         from shell: Shell = .zsh,
         within directory: Directory = .pwd,
-        successCodes: Set<Int32> = [0])
-    throws
-    -> String
+        successCodes: Set<Int32> = [0]
+    ) throws -> String
     {
         let script = makeCommand(command, executeWithin: directory)
         let task = Process()
@@ -63,9 +62,8 @@ extension Process {
 
     private static func makeCommand(
         _ command: String,
-        executeWithin directory: Directory)
-    -> String
-    {
+        executeWithin directory: Directory
+    ) -> String {
         switch directory {
         case .pwd:
             // We're already in the current directory – there's nothing to wrap.
