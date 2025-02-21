@@ -15,51 +15,54 @@
 //  limitations under the License.
 //
 
+import Foundation
 import SwiftShell
-import XCTest
+import Testing
 
-class ProcessTests: XCTestCase {
-	func test_execute_capturesStandardOutput() throws {
-		XCTAssertEqual(try Process.execute(#"echo "hello, world""#), "hello, world\n")
+struct ProcessTests {
+	@Test
+	func execute_capturesStandardOutput() throws {
+		#expect(try Process.execute(#"echo "hello, world""#) == "hello, world\n")
 	}
 
-	func test_execute_propagatesErrorCode() throws {
-		XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
-			XCTAssertEqual(
-				($0 as? ShellError)?.terminationStatus,
-				1
-			)
-		}
+	@Test
+	func execute_propagatesErrorCode() throws {
+		try #require(performing: {
+			try Process.execute(#"cat non-existent-file"#)
+		}, throws: {
+			($0 as? ShellError)?.terminationStatus == 1
+		})
 	}
 
-	func test_execute_propagatesStandardError() throws {
-		XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
-			XCTAssertEqual(
-				($0 as? ShellError)?.stderr,
-				"cat: non-existent-file: No such file or directory\n"
-			)
-		}
+	@Test
+	func execute_propagatesStandardError() throws {
+		try #require(performing: {
+			try Process.execute(#"cat non-existent-file"#)
+		}, throws: {
+			($0 as? ShellError)?.stderr == "cat: non-existent-file: No such file or directory\n"
+		})
 	}
 
-	func test_execute_propagatesStandardOutput() throws {
-		XCTAssertThrowsError(try Process.execute(#"echo 'hi'; cat non-existent-file"#)) {
-			XCTAssertEqual(
-				($0 as? ShellError)?.stdout,
-				"hi\n"
-			)
-		}
+	@Test
+	func execute_propagatesStandardOutput() throws {
+		try #require(performing: {
+			try Process.execute(#"echo 'hi'; cat non-existent-file"#)
+		}, throws: {
+			($0 as? ShellError)?.stdout == "hi\n"
+		})
 	}
 
-	func test_execute_propagatesCommandInError() throws {
-		XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
-			XCTAssertEqual(
-				($0 as? ShellError)?.command,
-				#"cat non-existent-file"#
-			)
-		}
+	@Test
+	func execute_propagatesCommandInError() throws {
+		try #require(performing: {
+			try Process.execute(#"cat non-existent-file"#)
+		}, throws: {
+			($0 as? ShellError)?.command == #"cat non-existent-file"#
+		})
 	}
 
-	func test_execute_runsCommandFromExpectedDirectoryWhenPathProvided() throws {
+	@Test
+	func execute_runsCommandFromExpectedDirectoryWhenPathProvided() throws {
 		let tempDirectory = FileManager
 			.default
 			.temporaryDirectory
@@ -80,10 +83,11 @@ class ProcessTests: XCTestCase {
 			#"ls"#,
 			within: .path(tempDirectory.relativePath)
 		)
-		XCTAssertEqual(output, "Hello\nworld\n")
+		#expect(output == "Hello\nworld\n")
 	}
 
-	func test_execute_runsCommandFromExpectedDirectoryWhenURLProvided() throws {
+	@Test
+	func execute_runsCommandFromExpectedDirectoryWhenURLProvided() throws {
 		let tempDirectory = FileManager
 			.default
 			.temporaryDirectory
@@ -104,10 +108,11 @@ class ProcessTests: XCTestCase {
 			#"ls"#,
 			within: .url(tempDirectory)
 		)
-		XCTAssertEqual(output, "Hello\nworld\n")
+		#expect(output == "Hello\nworld\n")
 	}
 
-	func test_execute_runsCommandFromExpectedDirectoryWhenURLWithSpaceProvided() throws {
+	@Test
+	func execute_runsCommandFromExpectedDirectoryWhenURLWithSpaceProvided() throws {
 		let tempDirectory = FileManager
 			.default
 			.temporaryDirectory
@@ -128,14 +133,15 @@ class ProcessTests: XCTestCase {
 			#"ls"#,
 			within: .url(tempDirectory)
 		)
-		XCTAssertEqual(output, "Hello\nworld\n")
+		#expect(output == "Hello\nworld\n")
 	}
 
-	func test_execute_executesMultilineCommands() throws {
+	@Test
+	func execute_executesMultilineCommands() throws {
 		let output = try Process.execute("""
 		echo "Hello, world!"
 		echo "Goodbye, moon"
 		""")
-		XCTAssertEqual(output, "Hello, world!\nGoodbye, moon\n")
+		#expect(output == "Hello, world!\nGoodbye, moon\n")
 	}
 }
