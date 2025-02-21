@@ -35,7 +35,7 @@ extension Process {
 	) throws -> String {
 		let script = makeCommand(command, executeWithin: directory)
 		let task = Process()
-		task.launchPath = shell.path
+		task.executableURL = shell.url
 		task.arguments = shell.arguments + [script]
 
 		let stdout = Pipe()

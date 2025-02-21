@@ -63,7 +63,7 @@ class ProcessTests: XCTestCase {
 		let tempDirectory = FileManager
 			.default
 			.temporaryDirectory
-			.appendingPathComponent(ProcessInfo().globallyUniqueString)
+            .appendingPathComponent(UUID().uuidString)
 
 		let expectedFileNames = [
 			"Hello",
