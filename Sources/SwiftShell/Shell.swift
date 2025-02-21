@@ -15,21 +15,23 @@
 //  limitations under the License.
 //
 
+import Foundation
+
 public struct Shell: Sendable {
-	public init(path: String, arguments: [String]) {
-		self.path = path
+	public init(url: URL, arguments: [String]) {
+		self.url = url
 		self.arguments = arguments
 	}
 
-	/// The path to the shell command.
-	public let path: String
+	/// The url to the shell command.
+	public let url: URL
 
 	/// The arguments to the shell command that enable executing an arbitrary command.
 	public let arguments: [String]
 
 	/// A convenience accessor for zsh shell struct.
-	public static let zsh = Shell(path: "/bin/zsh", arguments: ["-c"])
+	public static let zsh = Shell(url: .init(filePath: "/bin/zsh"), arguments: ["-c"])
 
 	/// A convenience accessor for a bash shell struct.
-	public static let bash = Shell(path: "/bin/bash", arguments: ["-c"])
+	public static let bash = Shell(url: .init(filePath: "/bin/bash"), arguments: ["-c"])
 }
