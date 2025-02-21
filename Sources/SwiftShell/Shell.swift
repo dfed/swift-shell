@@ -16,21 +16,20 @@
 //
 
 public struct Shell: Sendable {
+	public init(path: String, arguments: [String]) {
+		self.path = path
+		self.arguments = arguments
+	}
 
-    public init(path: String, arguments: [String]) {
-        self.path = path
-        self.arguments = arguments
-    }
+	/// The path to the shell command.
+	public let path: String
 
-    /// The path to the shell command.
-    public let path: String
+	/// The arguments to the shell command that enable executing an arbitrary command.
+	public let arguments: [String]
 
-    /// The arguments to the shell command that enable executing an arbitrary command.
-    public let arguments: [String]
+	/// A convenience accessor for zsh shell struct.
+	public static let zsh = Shell(path: "/bin/zsh", arguments: ["-c"])
 
-    /// A convenience accessor for zsh shell struct.
-    public static let zsh = Shell(path: "/bin/zsh", arguments: ["-c"])
-
-    /// A convenience accessor for a bash shell struct.
-    public static let bash = Shell(path: "/bin/bash", arguments: ["-c"])
+	/// A convenience accessor for a bash shell struct.
+	public static let bash = Shell(path: "/bin/bash", arguments: ["-c"])
 }
