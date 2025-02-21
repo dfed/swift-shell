@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-public struct Shell {
+public struct Shell: Sendable {
 
     public init(path: String, arguments: [String]) {
         self.path = path
