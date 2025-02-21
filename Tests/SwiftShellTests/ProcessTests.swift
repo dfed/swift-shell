@@ -19,72 +19,75 @@ import SwiftShell
 import XCTest
 
 class ProcessTests: XCTestCase {
+	func test_execute_capturesStandardOutput() throws {
+		XCTAssertEqual(try Process.execute(#"echo "hello, world""#), "hello, world\n")
+	}
 
-    func test_execute_capturesStandardOutput() throws {
-        XCTAssertEqual(try Process.execute(#"echo "hello, world""#), "hello, world\n")
-    }
+	func test_execute_propagatesErrorCode() throws {
+		XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
+			XCTAssertEqual(
+				($0 as? ShellError)?.terminationStatus,
+				1
+			)
+		}
+	}
 
-    func test_execute_propagatesErrorCode() throws {
-        XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
-            XCTAssertEqual(
-                ($0 as? ShellError)?.terminationStatus,
-            1)
-        }
-    }
+	func test_execute_propagatesStandardError() throws {
+		XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
+			XCTAssertEqual(
+				($0 as? ShellError)?.stderr,
+				"cat: non-existent-file: No such file or directory\n"
+			)
+		}
+	}
 
-    func test_execute_propagatesStandardError() throws {
-        XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
-            XCTAssertEqual(
-                ($0 as? ShellError)?.stderr,
-            "cat: non-existent-file: No such file or directory\n")
-        }
-    }
+	func test_execute_propagatesStandardOutput() throws {
+		XCTAssertThrowsError(try Process.execute(#"echo 'hi'; cat non-existent-file"#)) {
+			XCTAssertEqual(
+				($0 as? ShellError)?.stdout,
+				"hi\n"
+			)
+		}
+	}
 
-    func test_execute_propagatesStandardOutput() throws {
-        XCTAssertThrowsError(try Process.execute(#"echo 'hi'; cat non-existent-file"#)) {
-            XCTAssertEqual(
-                ($0 as? ShellError)?.stdout,
-            "hi\n")
-        }
-    }
+	func test_execute_propagatesCommandInError() throws {
+		XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
+			XCTAssertEqual(
+				($0 as? ShellError)?.command,
+				#"cat non-existent-file"#
+			)
+		}
+	}
 
-    func test_execute_propagatesCommandInError() throws {
-        XCTAssertThrowsError(try Process.execute(#"cat non-existent-file"#)) {
-            XCTAssertEqual(
-                ($0 as? ShellError)?.command,
-            #"cat non-existent-file"#)
-        }
-    }
+	func test_execute_runsCommandFromExpectedDirectory() throws {
+		let tempDirectory = FileManager
+			.default
+			.temporaryDirectory
+			.appendingPathComponent(ProcessInfo().globallyUniqueString)
 
-    func test_execute_runsCommandFromExpectedDirectory() throws {
-        let tempDirectory = FileManager
-            .default
-            .temporaryDirectory
-            .appendingPathComponent(ProcessInfo().globallyUniqueString)
+		let expectedFileNames = [
+			"Hello",
+			"world",
+		]
 
-        let expectedFileNames = [
-            "Hello",
-            "world"
-        ]
+		try Process.execute("mkdir -p \(tempDirectory.relativePath)")
+		for fileName in expectedFileNames {
+			let filePath = tempDirectory.appendingPathComponent(fileName)
+			try Process.execute("touch \(filePath.relativePath)")
+		}
 
-        try Process.execute("mkdir -p \(tempDirectory.relativePath)")
-        for fileName in expectedFileNames {
-            let filePath = tempDirectory.appendingPathComponent(fileName)
-            try Process.execute("touch \(filePath.relativePath)")
-        }
+		let output = try Process.execute(
+			#"ls"#,
+			within: .path(tempDirectory.relativePath)
+		)
+		XCTAssertEqual(output, "Hello\nworld\n")
+	}
 
-        let output = try Process.execute(
-            #"ls"#,
-            within: .path(tempDirectory.relativePath))
-        XCTAssertEqual(output, "Hello\nworld\n")
-    }
-
-    func test_execute_executesMultilineCommands() throws {
-        let output = try Process.execute("""
-        echo "Hello, world!"
-        echo "Goodbye, moon"
-        """)
-        XCTAssertEqual(output, "Hello, world!\nGoodbye, moon\n")
-    }
-
+	func test_execute_executesMultilineCommands() throws {
+		let output = try Process.execute("""
+		echo "Hello, world!"
+		echo "Goodbye, moon"
+		""")
+		XCTAssertEqual(output, "Hello, world!\nGoodbye, moon\n")
+	}
 }

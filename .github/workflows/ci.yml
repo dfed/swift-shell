@@ -17,3 +17,12 @@ jobs:
         run: sudo xcode-select --switch /Applications/Xcode_16.app/Contents/Developer
       - name: Build and Test Framework
         run: swift test
+  lint-swift:
+    name: Lint Swift
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Lint Swift
+        run: swift run --package-path CLI swiftformat --swiftversion 6.0 . --lint
