@@ -1,4 +1,7 @@
 # swift-shell
+[![CI Status](https://img.shields.io/github/actions/workflow/status/dfed/swift-shell/ci.yml?branch=main)](https://github.com/dfed/swift-shell/actions?query=workflow%3ACI+branch%3Amain)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://spdx.org/licenses/MIT.html)
+
 A simple wrapper for executing shell commands from Swift
 
 ## Requirements
