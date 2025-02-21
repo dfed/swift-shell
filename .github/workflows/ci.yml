@@ -17,6 +17,14 @@ jobs:
         run: sudo xcode-select --switch /Applications/Xcode_16.app/Contents/Developer
       - name: Build and Test Framework
         run: swift test
+  readme-validation:
+    name: Check Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Link Checker
+        uses: AlexanderDokuchaev/md-dead-link-check@v1.0.1
   lint-swift:
     name: Lint Swift
     runs-on: ubuntu-latest
