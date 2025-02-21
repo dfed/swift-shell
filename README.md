@@ -16,4 +16,7 @@ let output = try Process.execute(#"echo "Hello, world!""#)
 
 // Getting output from a shell command within a specific directory:
 let output = try Process.execute("ls", within: .path("~/"))
+
+// Getting output from a shell command within a specific directory:
+let output = try Process.execute("ls", within: .url(.init(filePath: "/tmp/")))
 ```

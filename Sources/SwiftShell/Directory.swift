@@ -15,10 +15,14 @@
 //  limitations under the License.
 //
 
+import Foundation
+
 /// An enum that represents a directory on disk.
 public enum Directory {
 	/// The current directory
 	case pwd
 	/// A path to a directory. Can be either relative or absolute.
 	case path(String)
+	/// A URL for a directory.
+	case url(URL)
 }

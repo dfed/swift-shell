@@ -23,6 +23,11 @@ public struct Shell: Sendable {
 		self.arguments = arguments
 	}
 
+	public init(path: String, arguments: [String]) {
+		url = .init(filePath: path)
+		self.arguments = arguments
+	}
+
 	/// The url to the shell command.
 	public let url: URL
 
