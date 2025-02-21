@@ -73,6 +73,12 @@ extension Process {
 			\(command)
 			popd
 			"""
+		case let .url(url):
+			"""
+			pushd '\(url.path(percentEncoded: false))'
+			\(command)
+			popd
+			"""
 		}
 	}
 }

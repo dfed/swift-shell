@@ -59,7 +59,7 @@ class ProcessTests: XCTestCase {
 		}
 	}
 
-	func test_execute_runsCommandFromExpectedDirectory() throws {
+	func test_execute_runsCommandFromExpectedDirectoryWhenPathProvided() throws {
 		let tempDirectory = FileManager
 			.default
 			.temporaryDirectory
@@ -79,6 +79,54 @@ class ProcessTests: XCTestCase {
 		let output = try Process.execute(
 			#"ls"#,
 			within: .path(tempDirectory.relativePath)
+		)
+		XCTAssertEqual(output, "Hello\nworld\n")
+	}
+
+	func test_execute_runsCommandFromExpectedDirectoryWhenURLProvided() throws {
+		let tempDirectory = FileManager
+			.default
+			.temporaryDirectory
+			.appendingPathComponent(UUID().uuidString)
+
+		let expectedFileNames = [
+			"Hello",
+			"world",
+		]
+
+		try Process.execute("mkdir -p \(tempDirectory.relativePath)")
+		for fileName in expectedFileNames {
+			let filePath = tempDirectory.appendingPathComponent(fileName)
+			try Process.execute("touch \(filePath.relativePath)")
+		}
+
+		let output = try Process.execute(
+			#"ls"#,
+			within: .url(tempDirectory)
+		)
+		XCTAssertEqual(output, "Hello\nworld\n")
+	}
+
+	func test_execute_runsCommandFromExpectedDirectoryWhenURLWithSpaceProvided() throws {
+		let tempDirectory = FileManager
+			.default
+			.temporaryDirectory
+			.appendingPathComponent("\(UUID().uuidString) with space")
+
+		let expectedFileNames = [
+			"Hello",
+			"world",
+		]
+
+		try Process.execute("mkdir -p '\(tempDirectory.relativePath)'")
+		for fileName in expectedFileNames {
+			let filePath = tempDirectory.appendingPathComponent(fileName)
+			try Process.execute("touch '\(filePath.relativePath)'")
+		}
+
+		let output = try Process.execute(
+			#"ls"#,
+			within: .url(tempDirectory)
 		)
 		XCTAssertEqual(output, "Hello\nworld\n")
 	}
