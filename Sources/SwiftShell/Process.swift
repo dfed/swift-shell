@@ -46,13 +46,10 @@ extension Process {
 
 		let standardOutput = Pipe()
 		task.standardOutput = standardOutput
-		let standardOutputValue = OSAllocatedUnfairLock(initialState: "")
+		let standardOutputValue = OSAllocatedUnfairLock(initialState: Data())
 		standardOutput.fileHandleForReading.readabilityHandler = { handle in
 			standardOutputValue.withLock {
-				$0 += String(
-					decoding: handle.availableData,
-					as: UTF8.self
-				)
+				$0 += handle.availableData
 			}
 		}
 		defer {
@@ -61,13 +58,10 @@ extension Process {
 
 		let standardError = Pipe()
 		task.standardError = standardError
-		let standardErrorValue = OSAllocatedUnfairLock(initialState: "")
+		let standardErrorValue = OSAllocatedUnfairLock(initialState: Data())
 		standardError.fileHandleForReading.readabilityHandler = { handle in
 			standardErrorValue.withLock {
-				$0 += String(
-					decoding: handle.availableData,
-					as: UTF8.self
-				)
+				$0 += handle.availableData
 			}
 		}
 		defer {
@@ -77,27 +71,21 @@ extension Process {
 		try task.run()
 		task.waitUntilExit()
 		standardOutputValue.withLock {
-			$0 += String(
-				decoding: standardOutput.fileHandleForReading.availableData,
-				as: UTF8.self
-			)
+			$0 += standardOutput.fileHandleForReading.availableData
 		}
 		standardErrorValue.withLock {
-			$0 += String(
-				decoding: standardError.fileHandleForReading.availableData,
-				as: UTF8.self
-			)
+			$0 += standardError.fileHandleForReading.availableData
 		}
 		guard successCodes.contains(task.terminationStatus) else {
 			throw ShellError(
 				terminationStatus: task.terminationStatus,
-				stdout: standardOutputValue.withLock { $0 },
-				stderr: standardErrorValue.withLock { $0 },
+				stdout: standardOutputValue.asString,
+				stderr: standardErrorValue.asString,
 				command: command
 			)
 		}
 
-		return standardOutputValue.withLock { $0 }
+		return standardOutputValue.asString
 	}
 
 	// MARK: Private
@@ -133,5 +121,14 @@ extension Pipe {
 		// we've seen that not doing this can lead to an error:
 		// Error: Error Domain=NSPOSIXErrorDomain Code=9 "Bad file descriptor"
 		try? fileHandleForReading.close()
+	}
+}
+
+extension OSAllocatedUnfairLock<Data> {
+	fileprivate var asString: String {
+		String(
+			decoding: withLock { $0 },
+			as: UTF8.self
+		)
 	}
 }
