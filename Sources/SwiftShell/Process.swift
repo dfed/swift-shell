@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 import Foundation
+import os
 
 extension Process {
 	// MARK: Public
@@ -43,23 +44,60 @@ extension Process {
 		task.executableURL = shell.url
 		task.arguments = shell.arguments + [script]
 
-		let stdout = Pipe()
-		task.standardOutput = stdout
-		let stderr = Pipe()
-		task.standardError = stderr
+		let standardOutput = Pipe()
+		task.standardOutput = standardOutput
+		let standardOutputValue = OSAllocatedUnfairLock(initialState: "")
+		standardOutput.fileHandleForReading.readabilityHandler = { handle in
+			standardOutputValue.withLock {
+				$0 += String(
+					decoding: handle.availableData,
+					as: UTF8.self
+				)
+			}
+		}
+		defer {
+			standardOutput.cleanup()
+		}
+
+		let standardError = Pipe()
+		task.standardError = standardError
+		let standardErrorValue = OSAllocatedUnfairLock(initialState: "")
+		standardError.fileHandleForReading.readabilityHandler = { handle in
+			standardErrorValue.withLock {
+				$0 += String(
+					decoding: handle.availableData,
+					as: UTF8.self
+				)
+			}
+		}
+		defer {
+			standardError.cleanup()
+		}
 
 		try task.run()
 		task.waitUntilExit()
+		standardOutputValue.withLock {
+			$0 += String(
+				decoding: standardOutput.fileHandleForReading.availableData,
+				as: UTF8.self
+			)
+		}
+		standardErrorValue.withLock {
+			$0 += String(
+				decoding: standardError.fileHandleForReading.availableData,
+				as: UTF8.self
+			)
+		}
 		guard successCodes.contains(task.terminationStatus) else {
-			throw try ShellError(
+			throw ShellError(
 				terminationStatus: task.terminationStatus,
-				stdout: stdout.readOutput(),
-				stderr: stderr.readOutput(),
+				stdout: standardOutputValue.withLock { $0 },
+				stderr: standardErrorValue.withLock { $0 },
 				command: command
 			)
 		}
 
-		return try stdout.readOutput()
+		return standardOutputValue.withLock { $0 }
 	}
 
 	// MARK: Private
@@ -89,20 +127,11 @@ extension Process {
 }
 
 extension Pipe {
-	fileprivate func readOutput() throws -> String {
-		defer {
-			// We shouldn't need to do this per the docs, but
-			// we've seen that not doing this can lead to an error:
-			// Error: Error Domain=NSPOSIXErrorDomain Code=9 "Bad file descriptor"
-			try? fileHandleForReading.close()
-		}
-		guard let readData = try fileHandleForReading.readToEnd() else {
-			return ""
-		}
-
-		return String(
-			decoding: readData,
-			as: UTF8.self
-		)
+	fileprivate func cleanup() {
+		fileHandleForReading.readabilityHandler = nil
+		// We shouldn't need to do this per the docs, but
+		// we've seen that not doing this can lead to an error:
+		// Error: Error Domain=NSPOSIXErrorDomain Code=9 "Bad file descriptor"
+		try? fileHandleForReading.close()
 	}
 }
