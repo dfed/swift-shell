@@ -76,6 +76,18 @@ extension Process {
 
 		try task.run()
 		task.waitUntilExit()
+		standardOutputValue.withLock {
+			$0 += String(
+				decoding: standardOutput.fileHandleForReading.availableData,
+				as: UTF8.self
+			)
+		}
+		standardErrorValue.withLock {
+			$0 += String(
+				decoding: standardError.fileHandleForReading.availableData,
+				as: UTF8.self
+			)
+		}
 		guard successCodes.contains(task.terminationStatus) else {
 			throw ShellError(
 				terminationStatus: task.terminationStatus,
