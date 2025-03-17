@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 import Foundation
+import os
 
 extension Process {
 	// MARK: Public
@@ -45,21 +46,46 @@ extension Process {
 
 		let stdout = Pipe()
 		task.standardOutput = stdout
+		let standardOutput = OSAllocatedUnfairLock(initialState: "")
+		stdout.fileHandleForReading.readabilityHandler = { handle in
+			standardOutput.withLock {
+				$0 += String(
+					decoding: handle.availableData,
+					as: UTF8.self
+				)
+			}
+		}
+		defer {
+			stdout.cleanup()
+		}
+
 		let stderr = Pipe()
 		task.standardError = stderr
+		let standardError = OSAllocatedUnfairLock(initialState: "")
+		stderr.fileHandleForReading.readabilityHandler = { handle in
+			standardError.withLock {
+				$0 += String(
+					decoding: handle.availableData,
+					as: UTF8.self
+				)
+			}
+		}
+		defer {
+			stderr.cleanup()
+		}
 
 		try task.run()
 		task.waitUntilExit()
 		guard successCodes.contains(task.terminationStatus) else {
-			throw try ShellError(
+			throw ShellError(
 				terminationStatus: task.terminationStatus,
-				stdout: stdout.readOutput(),
-				stderr: stderr.readOutput(),
+				stdout: standardOutput.withLock { $0 },
+				stderr: standardError.withLock { $0 },
 				command: command
 			)
 		}
 
-		return try stdout.readOutput()
+		return standardOutput.withLock { $0 }
 	}
 
 	// MARK: Private
@@ -89,20 +115,11 @@ extension Process {
 }
 
 extension Pipe {
-	fileprivate func readOutput() throws -> String {
-		defer {
-			// We shouldn't need to do this per the docs, but
-			// we've seen that not doing this can lead to an error:
-			// Error: Error Domain=NSPOSIXErrorDomain Code=9 "Bad file descriptor"
-			try? fileHandleForReading.close()
-		}
-		guard let readData = try fileHandleForReading.readToEnd() else {
-			return ""
-		}
-
-		return String(
-			decoding: readData,
-			as: UTF8.self
-		)
+	fileprivate func cleanup() {
+		fileHandleForReading.readabilityHandler = nil
+		// We shouldn't need to do this per the docs, but
+		// we've seen that not doing this can lead to an error:
+		// Error: Error Domain=NSPOSIXErrorDomain Code=9 "Bad file descriptor"
+		try? fileHandleForReading.close()
 	}
 }
