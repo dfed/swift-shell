@@ -44,11 +44,11 @@ extension Process {
 		task.executableURL = shell.url
 		task.arguments = shell.arguments + [script]
 
-		let stdout = Pipe()
-		task.standardOutput = stdout
-		let standardOutput = OSAllocatedUnfairLock(initialState: "")
-		stdout.fileHandleForReading.readabilityHandler = { handle in
-			standardOutput.withLock {
+		let standardOutput = Pipe()
+		task.standardOutput = standardOutput
+		let standardOutputValue = OSAllocatedUnfairLock(initialState: "")
+		standardOutput.fileHandleForReading.readabilityHandler = { handle in
+			standardOutputValue.withLock {
 				$0 += String(
 					decoding: handle.availableData,
 					as: UTF8.self
@@ -56,14 +56,14 @@ extension Process {
 			}
 		}
 		defer {
-			stdout.cleanup()
+			standardOutput.cleanup()
 		}
 
-		let stderr = Pipe()
-		task.standardError = stderr
-		let standardError = OSAllocatedUnfairLock(initialState: "")
-		stderr.fileHandleForReading.readabilityHandler = { handle in
-			standardError.withLock {
+		let standardError = Pipe()
+		task.standardError = standardError
+		let standardErrorValue = OSAllocatedUnfairLock(initialState: "")
+		standardError.fileHandleForReading.readabilityHandler = { handle in
+			standardErrorValue.withLock {
 				$0 += String(
 					decoding: handle.availableData,
 					as: UTF8.self
@@ -71,7 +71,7 @@ extension Process {
 			}
 		}
 		defer {
-			stderr.cleanup()
+			standardError.cleanup()
 		}
 
 		try task.run()
@@ -79,13 +79,13 @@ extension Process {
 		guard successCodes.contains(task.terminationStatus) else {
 			throw ShellError(
 				terminationStatus: task.terminationStatus,
-				stdout: standardOutput.withLock { $0 },
-				stderr: standardError.withLock { $0 },
+				stdout: standardOutputValue.withLock { $0 },
+				stderr: standardErrorValue.withLock { $0 },
 				command: command
 			)
 		}
 
-		return standardOutput.withLock { $0 }
+		return standardOutputValue.withLock { $0 }
 	}
 
 	// MARK: Private
