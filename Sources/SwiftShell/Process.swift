@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 import Foundation
-import os
+import Synchronization
 
 extension Process {
 	// MARK: Public
@@ -46,7 +46,7 @@ extension Process {
 
 		let standardOutput = Pipe()
 		task.standardOutput = standardOutput
-		let standardOutputValue = OSAllocatedUnfairLock(initialState: Data())
+		let standardOutputValue = Mutex(Data())
 		standardOutput.fileHandleForReading.readabilityHandler = { handle in
 			standardOutputValue.withLock {
 				$0 += handle.availableData
@@ -58,7 +58,7 @@ extension Process {
 
 		let standardError = Pipe()
 		task.standardError = standardError
-		let standardErrorValue = OSAllocatedUnfairLock(initialState: Data())
+		let standardErrorValue = Mutex(Data())
 		standardError.fileHandleForReading.readabilityHandler = { handle in
 			standardErrorValue.withLock {
 				$0 += handle.availableData
@@ -124,7 +124,7 @@ extension Pipe {
 	}
 }
 
-extension OSAllocatedUnfairLock<Data> {
+extension Mutex<Data> {
 	fileprivate var asString: String {
 		String(
 			decoding: withLock { $0 },
