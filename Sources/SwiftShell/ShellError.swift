@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 /// An error thrown after shell execution when the status code is non-zero.
-public struct ShellError: Error {
+public struct ShellError: Error, Sendable {
 	/// The exit code returned by the command.
 	public let terminationStatus: Int32
 	/// Text written to standard out during execution of the command.

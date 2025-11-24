@@ -23,7 +23,7 @@
 import Foundation
 
 /// An enum that represents a directory on disk.
-public enum Directory {
+public enum Directory: Sendable {
 	/// The current directory
 	case pwd
 	/// A path to a directory. Can be either relative or absolute.

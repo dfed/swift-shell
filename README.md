@@ -4,10 +4,6 @@
 
 A simple wrapper for executing shell commands from Swift
 
-# Deprecated
-
-Use Apple’s [swift-subprocess](https://github.com/swiftlang/swift-subprocess) library instead.
-
 ## Usage
 
 ```
