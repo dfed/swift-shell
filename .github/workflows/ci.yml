@@ -12,7 +12,7 @@ jobs:
     runs-on: macos-15
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Select Xcode Version
         run: sudo xcode-select --switch /Applications/Xcode_16.app/Contents/Developer
       - name: Build and Test Framework
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Link Checker
         uses: AlexanderDokuchaev/md-dead-link-check@v1.0.1
   lint-swift:
@@ -31,6 +31,6 @@ jobs:
     container: swift:6.0
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Lint Swift
         run: swift run --package-path CLI swiftformat --swiftversion 6.0 . --lint
